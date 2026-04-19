@@ -41,6 +41,9 @@ class MainActivity : AppCompatActivity() {
         val containerFolhasReais = findViewById<LinearLayout>(R.id.containerFolhasReais)
         val listaInputsFolhas = findViewById<LinearLayout>(R.id.listaInputsFolhas)
         val txtTotalFolhasReais = findViewById<TextView>(R.id.txtTotalFolhasReais)
+        val txtTotalPecasReais = findViewById<TextView>(R.id.txtTotalPecasReais)
+        val editAgrupamento = findViewById<EditText>(R.id.editAgrupamento)
+        val txtResumoGrupos = findViewById<TextView>(R.id.txtResumoGrupos)
 
         // CARREGAR DADOS SALVOS
         editCircDesejada.setText(prefs.getString("last_circ", ""))
@@ -50,13 +53,52 @@ class MainActivity : AppCompatActivity() {
         txtHistorico.text = prefs.getString("historico_txt", "Nenhum registro salvo.")
 
         fun atualizarSomaReal() {
-            var soma = 0
+            val listaFolhas = mutableListOf<Int>()
+            var somaTotalFolhas = 0
+            
+            // Primeiro, coleta todos os valores
             for (i in 0 until listaInputsFolhas.childCount) {
-                val input = listaInputsFolhas.getChildAt(i) as? EditText
-                soma += input?.text.toString().toIntOrNull() ?: 0
+                val row = listaInputsFolhas.getChildAt(i) as? LinearLayout
+                val input = row?.getChildAt(1) as? EditText // Agora o input é o segundo elemento (índice 1)
+                val valor = input?.text.toString().toIntOrNull() ?: 0
+                somaTotalFolhas += valor
+                listaFolhas.add(valor)
             }
-            txtTotalFolhasReais.text = "TOTAL REAL DE FOLHAS: $soma"
+            
+            val grade = editGrade.text.toString().toDoubleOrNull() ?: 0.0
+            val totalPecas = somaTotalFolhas * grade
+            
+            txtTotalFolhasReais.text = "TOTAL REAL DE FOLHAS: $somaTotalFolhas"
+            txtTotalPecasReais.text = String.format(Locale.getDefault(), "TOTAL REAL DE PEÇAS: %.0f", totalPecas)
+
+            // Lógica de Agrupamento Visual à Direita
+            val agruparCada = editAgrupamento.text.toString().toIntOrNull() ?: 1
+            var grupoSoma = 0
+            var contador = 0
+            
+            for (i in 0 until listaInputsFolhas.childCount) {
+                val row = listaInputsFolhas.getChildAt(i) as? LinearLayout
+                val txtSomaGrup = row?.getChildAt(2) as? TextView // Agora o Σ é o terceiro elemento (índice 2)
+                
+                grupoSoma += listaFolhas[i]
+                contador++
+                
+                if (agruparCada > 1 && (contador == agruparCada || i == listaFolhas.size - 1)) {
+                    txtSomaGrup?.text = "Σ: $grupoSoma"
+                    txtSomaGrup?.visibility = View.VISIBLE
+                    grupoSoma = 0
+                    contador = 0
+                } else {
+                    txtSomaGrup?.visibility = View.GONE
+                }
+            }
         }
+
+        editAgrupamento.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) { atualizarSomaReal() }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        })
 
         btnDistribuir.setOnClickListener {
             val sCirc = editCircDesejada.text.toString()
@@ -98,17 +140,44 @@ class MainActivity : AppCompatActivity() {
                 if (numBobinasInt > 0) {
                     containerFolhasReais.visibility = View.VISIBLE
                     for (i in 1..numBobinasInt) {
+                        val row = LinearLayout(this).apply {
+                            orientation = LinearLayout.HORIZONTAL
+                            gravity = android.view.Gravity.CENTER_VERTICAL
+                            setPadding(0, 4, 0, 4)
+                        }
+
+                        // ENUMERAÇÃO (1., 2., 3...)
+                        val txtEnum = TextView(this).apply {
+                            text = "$i."
+                            textSize = 18f
+                            setPadding(8, 0, 16, 0)
+                            setTextColor(android.graphics.Color.DKGRAY)
+                        }
+
                         val editFolha = EditText(this).apply {
-                            hint = "Folhas na Bobina $i"
+                            hint = "Bobina $i"
                             inputType = android.text.InputType.TYPE_CLASS_NUMBER
-                            setText(voltas.toInt().toString()) // Sugere o valor calculado
+                            setText("0")
+                            textSize = 20f
+                            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
                             addTextChangedListener(object : TextWatcher {
                                 override fun afterTextChanged(s: Editable?) { atualizarSomaReal() }
                                 override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
                                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
                             })
                         }
-                        listaInputsFolhas.addView(editFolha)
+
+                        val txtSomaGrup = TextView(this).apply {
+                            setPadding(24, 0, 16, 0)
+                            setTextColor(android.graphics.Color.BLUE)
+                            setTypeface(null, android.graphics.Typeface.BOLD)
+                            textSize = 24f // Fonte maior conforme solicitado
+                        }
+
+                        row.addView(txtEnum)
+                        row.addView(editFolha)
+                        row.addView(txtSomaGrup)
+                        listaInputsFolhas.addView(row)
                     }
                     atualizarSomaReal()
                 } else {
