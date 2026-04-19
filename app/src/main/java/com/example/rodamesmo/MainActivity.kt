@@ -86,3 +86,4 @@ class MainActivity : AppCompatActivity() {
         }
     }
 }
+// Versão Final Sincronizada com HTML/Netlify
