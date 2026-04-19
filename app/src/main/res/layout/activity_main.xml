@@ -31,13 +31,14 @@
         <EditText android:id="@+id/editPedido" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="numberDecimal" />
 
         <Button android:id="@+id/btnDistribuir" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Calcular Produção" android:layout_marginTop="16dp"/>
-        <Button android:id="@+id/btnReset" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Resetar" style="@style/Widget.AppCompat.Button.Colored" android:backgroundTint="#6c757d" />
+        <Button android:id="@+id/btnSalvarHistorico" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Salvar no Histórico" android:visibility="gone" android:backgroundTint="#28a745" />
+        <Button android:id="@+id/btnReset" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Limpar Tudo" style="@style/Widget.AppCompat.Button.Colored" android:backgroundTint="#6c757d" />
 
         <!-- GRÁFICO DA RODA -->
         <com.example.rodamesmo.RodaView
             android:id="@+id/rodaView"
-            android:layout_width="200dp"
-            android:layout_height="200dp"
+            android:layout_width="300dp"
+            android:layout_height="300dp"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="16dp"
             android:visibility="gone" />
@@ -52,6 +53,51 @@
         <TextView android:id="@+id/txtPecasBobina" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="18sp" android:textStyle="bold" android:textColor="#28a745" />
         <TextView android:id="@+id/txtMetrosBobina" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="18sp" android:textStyle="bold" android:textColor="#1a73e8" />
         <TextView android:id="@+id/txtQtdBobinas" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="18sp" android:textStyle="bold" android:textColor="#ff8c00" />
+
+        <!-- SEÇÃO DE FOLHAS REAIS (DINÂMICA) -->
+        <LinearLayout
+            android:id="@+id/containerFolhasReais"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="16dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Lançamento: Folhas Reais por Bobina"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:layout_marginBottom="8dp"/>
+
+            <LinearLayout
+                android:id="@+id/listaInputsFolhas"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+            <TextView
+                android:id="@+id/txtTotalFolhasReais"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:textColor="#d32f2f"
+                android:layout_marginTop="8dp"/>
+        </LinearLayout>
+
+        <View android:layout_width="match_parent" android:layout_height="2dp" android:background="#000" android:layout_marginVertical="20dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Histórico de Registros"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <TextView android:id="@+id/txtHistorico" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="14sp" android:fontFamily="monospace" />
+        <Button android:id="@+id/btnLimparHistorico" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Limpar Histórico" android:textSize="10sp" android:layout_gravity="end" />
 
     </LinearLayout>
 </ScrollView>
