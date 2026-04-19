@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RodaMesmo - Calculadora de Eixos e Produção</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background-color: #f4f4f9; color: #333; max-width: 600px; margin: auto; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #1a73e8; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background-color: #1a73e8; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; margin-top: 10px; }
+        button:hover { background-color: #1557b0; }
+        .result { margin-top: 20px; padding: 15px; border-top: 1px solid #eee; }
+        .eixos { font-family: monospace; background: #f8f9fa; padding: 10px; border-radius: 4px; white-space: pre-wrap; margin-bottom: 15px; }
+        .highlight { font-weight: bold; font-size: 1.1em; }
+        .green { color: #28a745; }
+        .orange { color: #ff8c00; }
+        .blue { color: #1a73e8; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>RodaMesmo</h1>
+
+    <div class="input-group">
+        <label>Circunferência Desejada (m):</label>
+        <input type="number" id="circDesejada" step="0.01" value="8.43">
+    </div>
+
+    <div class="input-group">
+        <label>Número de Voltas:</label>
+        <input type="number" id="voltas" value="238">
+    </div>
+
+    <div class="input-group">
+        <label>Grade:</label>
+        <input type="number" id="grade" value="6">
+    </div>
+
+    <div class="input-group">
+        <label>Quantidade do Pedido:</label>
+        <input type="number" id="pedido" value="60000">
+    </div>
+
+    <button onclick="calcular()">Calcular Distribuição e Produção</button>
+
+    <div class="result" id="resultado" style="display:none;">
+        <h3>Distribuição dos Eixos:</h3>
+        <div class="eixos" id="txtEixos"></div>
+
+        <p id="txtCircReal" class="blue"></p>
+        <p id="txtPecasBobina" class="highlight green"></p>
+        <p id="txtBobinasEnfestar" class="highlight orange"></p>
+    </div>
+</div>
+
+<script>
+    function calcular() {
+        const TAMANHO_BASE_TOTAL = 7.75;
+        const TAMANHO_BASE_EIXO = TAMANHO_BASE_TOTAL / 6;
+
+        const target = parseFloat(document.getElementById('circDesejada').value);
+        const voltas = parseFloat(document.getElementById('voltas').value) || 0;
+        const grade = parseFloat(document.getElementById('grade').value) || 0;
+        const pedido = parseFloat(document.getElementById('pedido').value) || 0;
+
+        if (isNaN(target)) return;
+
+        // 1. Cálculo de Pinos
+        const sobra = Math.max(0, target - TAMANHO_BASE_TOTAL);
+        const totalPinos = Math.ceil((sobra - 0.0001) / 0.05);
+        const circReal = TAMANHO_BASE_TOTAL + (totalPinos * 0.05);
+
+        // 2. Distribuição Simétrica
+        const basePorEixo = Math.floor(totalPinos / 6);
+        const extras = totalPinos % 6;
+        const ordemSimetrica = [0, 3, 1, 4, 2, 5]; // A-D, B-E, C-F
+        const temExtra = new Array(6).fill(false);
+        for (let i = 0; i < extras; i++) {
+            temExtra[ordemSimetrica[i]] = true;
+        }
+
+        const nomes = ["A", "B", "C", "D", "E", "F"];
+        let eixosHtml = "";
+        for (let i = 0; i < 6; i++) {
+            const p = temExtra[i] ? basePorEixo + 1 : basePorEixo;
+            const metros = TAMANHO_BASE_EIXO + (p * 0.05);
+            eixosHtml += `Eixo ${nomes[i]}: ${p} pinos (${metros.toFixed(2)} m)\n`;
+        }
+
+        // 3. Resultados de Produção
+        const pecasPorBobina = grade * voltas;
+        const bobinasEnfestar = pecasPorBobina > 0 ? (pedido / pecasPorBobina) : 0;
+
+        // Atualizar Tela
+        document.getElementById('txtEixos').innerText = eixosHtml.trim();
+
+        const excessoCm = (circReal - target) * 100;
+        document.getElementById('txtCircReal').innerText = `Circunferência Real: ${circReal.toFixed(2)} m (Excesso: ${excessoCm.toFixed(1)} cm)`;
+
+        document.getElementById('txtPecasBobina').innerText = `Qtde de Peças por Bobina: ${pecasPorBobina.toLocaleString('pt-BR')}`;
+        document.getElementById('txtBobinasEnfestar').innerText = `Qtde de Bobinas a Enfestar: ${bobinasEnfestar.toFixed(2)}`;
+
+        document.getElementById('resultado').style.display = "block";
+    }
+</script>
+
+</body>
+</html>

@@ -48,6 +48,51 @@
             android:text="9.0"
             android:layout_marginBottom="16dp" />
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Número de Voltas:"
+            android:layout_marginBottom="4dp" />
+
+        <EditText
+            android:id="@+id/editVoltas"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Ex: 100"
+            android:inputType="numberDecimal"
+            android:text="100"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Grade:"
+            android:layout_marginBottom="4dp" />
+
+        <EditText
+            android:id="@+id/editGrade"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Ex: 6"
+            android:inputType="numberDecimal"
+            android:text="6"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Quantidade do Pedido:"
+            android:layout_marginBottom="4dp" />
+
+        <EditText
+            android:id="@+id/editPedido"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Ex: 5000"
+            android:inputType="numberDecimal"
+            android:text="1000"
+            android:layout_marginBottom="16dp" />
+
         <Button
             android:id="@+id/btnDistribuir"
             android:layout_width="match_parent"
@@ -83,7 +128,46 @@
             android:layout_height="wrap_content"
             android:text="Circunferência Real: 9.00 m"
             android:textSize="16sp"
-            android:textColor="@android:color/black" />
+            android:textColor="@android:color/black"
+            android:layout_marginBottom="8dp" />
 
+        <TextView
+            android:id="@+id/txtDistanciaTotal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Distância Total: 0.00 m"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#1a73e8"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/txtAreaTotal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Área Total: 0.00 ha"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#28a745" />
+
+        <TextView
+            android:id="@+id/txtPecasBobina"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Qtde de Peças por Bobina: 0"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#28a745"
+            android:layout_marginTop="16dp" />
+
+        <TextView
+            android:id="@+id/txtQtdBobinas"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Qtde de Bobinas a Enfestar: 0"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#ff8c00"
+            android:layout_marginTop="8dp" />
     </LinearLayout>
 </ScrollView>

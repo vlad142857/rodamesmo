@@ -16,33 +16,43 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val editCircunferenciaDesejada = findViewById<EditText>(R.id.editCircunferenciaDesejada)
+        val editVoltas = findViewById<EditText>(R.id.editVoltas)
+        val editGrade = findViewById<EditText>(R.id.editGrade)
+        val editPedido = findViewById<EditText>(R.id.editPedido)
+        
         val btnDistribuir = findViewById<Button>(R.id.btnDistribuir)
+        
         val txtSugestaoEixos = findViewById<TextView>(R.id.txtSugestaoEixos)
         val txtCircunferenciaReal = findViewById<TextView>(R.id.txtCircunferenciaReal)
+        val txtPecasBobina = findViewById<TextView>(R.id.txtPecasBobina)
+        val txtQtdBobinas = findViewById<TextView>(R.id.txtQtdBobinas)
 
-        // Com base na informação do usuário: 9m = A5, B4, C4, D4, E4, F4 (25 pinos)
-        // Circ = 6*Base + 25*0.05 -> 9.05 = 6*1.30 + 1.25.
-        val TAMANHO_BASE_EIXO = 1.30 
+        // Calibragem: 9.00m = 25 pinos (A:5, B-F:4)
+        val TAMANHO_BASE_TOTAL = 7.75
+        val TAMANHO_BASE_EIXO = TAMANHO_BASE_TOTAL / 6.0 
 
         btnDistribuir.setOnClickListener {
             val desejadaStr = editCircunferenciaDesejada.text.toString()
+            val voltasStr = editVoltas.text.toString()
+            val gradeStr = editGrade.text.toString()
+            val pedidoStr = editPedido.text.toString()
             
             if (desejadaStr.isNotEmpty()) {
                 val target = desejadaStr.toDouble()
+                val voltas = if (voltasStr.isNotEmpty()) voltasStr.toDouble() else 0.0
+                val grade = if (gradeStr.isNotEmpty()) gradeStr.toDouble() else 0.0
+                val pedido = if (pedidoStr.isNotEmpty()) pedidoStr.toDouble() else 0.0
                 
-                val circunferenciaMinima = TAMANHO_BASE_EIXO * 6
-                val sobraParaPinos = max(0.0, target - circunferenciaMinima)
+                val sobraParaPinos = max(0.0, target - TAMANHO_BASE_TOTAL)
                 
-                // Calcula total de pinos (passos de 5cm) - Regra: Nunca menor que o target
-                // Sem margem extra: se der 9.00 certinho, ele mantém os pinos exatos.
-                val totalPinos = ceil(sobraParaPinos / 0.05).toInt()
-                val circunferenciaReal = circunferenciaMinima + (totalPinos * 0.05)
+                // 1. Calcula total de pinos
+                val totalPinos = ceil((sobraParaPinos - 0.0001) / 0.05).toInt()
+                val circunferenciaReal = TAMANHO_BASE_TOTAL + (totalPinos * 0.05)
                 
-                // Distribuição Simétrica (Pares A-D, B-E, C-F)
+                // 2. Distribuição Simétrica
                 val pinosBasePorEixo = totalPinos / 6
                 val pinosExtras = totalPinos % 6
-                
-                val ordemSimetrica = intArrayOf(0, 3, 1, 4, 2, 5) // Prioridade: A, D, B, E, C, F
+                val ordemSimetrica = intArrayOf(0, 3, 1, 4, 2, 5)
                 val temExtra = BooleanArray(6) { false }
                 for (i in 0 until pinosExtras) {
                     temExtra[ordemSimetrica[i]] = true
@@ -58,10 +68,23 @@ class MainActivity : AppCompatActivity() {
                 
                 txtSugestaoEixos.text = sb.toString().trim()
                 
-                val passouCm = (circunferenciaReal - target) * 100
+                val excessoCm = (circunferenciaReal - target) * 100
                 txtCircunferenciaReal.text = String.format(Locale.getDefault(), 
                     "Circunferência Real: %.2f m\n(Excesso: %.1f cm)",
-                    circunferenciaReal, passouCm)
+                    circunferenciaReal, if (excessoCm < 0.01) 0.0 else excessoCm)
+                
+                // 3. Cálculos de Produção
+                val pecasPorBobina = grade * voltas
+                txtPecasBobina.text = String.format(Locale.getDefault(),
+                    "Qtde de Peças por Bobina: %.0f", pecasPorBobina)
+
+                if (pecasPorBobina > 0) {
+                    val qtdBobinas = pedido / pecasPorBobina
+                    txtQtdBobinas.text = String.format(Locale.getDefault(),
+                        "Qtde de Bobinas a Enfestar: %.2f", qtdBobinas)
+                } else {
+                    txtQtdBobinas.text = "Qtde de Bobinas a Enfestar: 0"
+                }
             }
         }
     }
