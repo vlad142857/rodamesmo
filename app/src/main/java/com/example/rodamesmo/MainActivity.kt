@@ -1,13 +1,12 @@
 package com.example.rodamesmo
 
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import java.util.Locale
-import kotlin.math.ceil
-import kotlin.math.max
 
 class MainActivity : AppCompatActivity() {
 
@@ -15,77 +14,75 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val editCircunferenciaDesejada = findViewById<EditText>(R.id.editCircunferenciaDesejada)
-        val editVoltas = findViewById<EditText>(R.id.editVoltas)
+        val editCircDesejada = findViewById<EditText>(R.id.editCircunferenciaDesejada)
         val editGrade = findViewById<EditText>(R.id.editGrade)
+        val editVoltas = findViewById<EditText>(R.id.editVoltas)
         val editPedido = findViewById<EditText>(R.id.editPedido)
         
         val btnDistribuir = findViewById<Button>(R.id.btnDistribuir)
+        val btnReset = findViewById<Button>(R.id.btnReset)
         
-        val txtSugestaoEixos = findViewById<TextView>(R.id.txtSugestaoEixos)
-        val txtCircunferenciaReal = findViewById<TextView>(R.id.txtCircunferenciaReal)
+        val txtCircReal = findViewById<TextView>(R.id.txtCircReal)
+        
         val txtPecasBobina = findViewById<TextView>(R.id.txtPecasBobina)
+        val txtMetrosBobina = findViewById<TextView>(R.id.txtMetrosBobina)
         val txtQtdBobinas = findViewById<TextView>(R.id.txtQtdBobinas)
-
-        // Calibragem: 9.00m = 25 pinos (A:5, B-F:4)
-        val TAMANHO_BASE_TOTAL = 7.75
-        val TAMANHO_BASE_EIXO = TAMANHO_BASE_TOTAL / 6.0 
+        val rodaView = findViewById<RodaView>(R.id.rodaView)
 
         btnDistribuir.setOnClickListener {
-            val desejadaStr = editCircunferenciaDesejada.text.toString()
-            val voltasStr = editVoltas.text.toString()
-            val gradeStr = editGrade.text.toString()
-            val pedidoStr = editPedido.text.toString()
+            val targetDesejado = editCircDesejada.text.toString().toDoubleOrNull() ?: 0.0
+            val voltas = editVoltas.text.toString().toDoubleOrNull() ?: 0.0
+            val grade = editGrade.text.toString().toDoubleOrNull() ?: 1.0
+            val pedido = editPedido.text.toString().toDoubleOrNull() ?: 0.0
             
-            if (desejadaStr.isNotEmpty()) {
-                val target = desejadaStr.toDouble()
-                val voltas = if (voltasStr.isNotEmpty()) voltasStr.toDouble() else 0.0
-                val grade = if (gradeStr.isNotEmpty()) gradeStr.toDouble() else 0.0
-                val pedido = if (pedidoStr.isNotEmpty()) pedidoStr.toDouble() else 0.0
+            if (targetDesejado > 0) {
+                // ARREDONDAMENTO PARA CIMA (Múltiplo de 5cm)
+                val targetArredondado = Math.ceil(targetDesejado / 0.05) * 0.05
                 
-                val sobraParaPinos = max(0.0, target - TAMANHO_BASE_TOTAL)
+                // LÓGICA DE COMPENSAÇÃO (Invertida)
+                val totalPinos = Math.round((10.25 - targetArredondado) / 0.05).toInt()
+                val circPecaReal = targetArredondado
                 
-                // 1. Calcula total de pinos
-                val totalPinos = ceil((sobraParaPinos - 0.0001) / 0.05).toInt()
-                val circunferenciaReal = TAMANHO_BASE_TOTAL + (totalPinos * 0.05)
-                
-                // 2. Distribuição Simétrica
-                val pinosBasePorEixo = totalPinos / 6
+                // Distribuição (Pino extra prioridade Eixo Vermelho)
+                val pinosBase = totalPinos / 6
                 val pinosExtras = totalPinos % 6
-                val ordemSimetrica = intArrayOf(0, 3, 1, 4, 2, 5)
-                val temExtra = BooleanArray(6) { false }
-                for (i in 0 until pinosExtras) {
-                    temExtra[ordemSimetrica[i]] = true
-                }
+                val ordem = intArrayOf(0, 3, 1, 4, 2, 5)
+                val extras = BooleanArray(6) { false }
+                for (i in 0 until pinosExtras) extras[ordem[i]] = true
                 
-                val nomes = arrayOf("A", "B", "C", "D", "E", "F")
-                val sb = StringBuilder()
+                val listaPinosParaGrafico = IntArray(6)
                 for (i in 0 until 6) {
-                    val p = if (temExtra[i]) pinosBasePorEixo + 1 else pinosBasePorEixo
-                    val metros = TAMANHO_BASE_EIXO + (p * 0.05)
-                    sb.append("Eixo %s: %d pinos (%.2f m)\n".format(Locale.getDefault(), nomes[i], p, metros))
+                    listaPinosParaGrafico[i] = if (extras[i]) pinosBase + 1 else pinosBase
                 }
                 
-                txtSugestaoEixos.text = sb.toString().trim()
-                
-                val excessoCm = (circunferenciaReal - target) * 100
-                txtCircunferenciaReal.text = String.format(Locale.getDefault(), 
-                    "Circunferência Real: %.2f m\n(Excesso: %.1f cm)",
-                    circunferenciaReal, if (excessoCm < 0.01) 0.0 else excessoCm)
-                
-                // 3. Cálculos de Produção
+                // Mostrar resultados
+                txtCircReal.text = String.format(Locale.getDefault(), "Circunferência Real da Peça: %.3f m", circPecaReal)
+                rodaView.visibility = View.VISIBLE
+                rodaView.setPinos(listaPinosParaGrafico)
+
+                // OS 3 CÁLCULOS
                 val pecasPorBobina = grade * voltas
-                txtPecasBobina.text = String.format(Locale.getDefault(),
-                    "Qtde de Peças por Bobina: %.0f", pecasPorBobina)
+                txtPecasBobina.text = String.format(Locale.getDefault(), "1. Peças por Bobina: %.0f", pecasPorBobina)
+                txtMetrosBobina.text = String.format(Locale.getDefault(), "2. Metros por Bobina: %.2f m", circPecaReal * voltas)
 
                 if (pecasPorBobina > 0) {
-                    val qtdBobinas = pedido / pecasPorBobina
-                    txtQtdBobinas.text = String.format(Locale.getDefault(),
-                        "Qtde de Bobinas a Enfestar: %.2f", qtdBobinas)
-                } else {
-                    txtQtdBobinas.text = "Qtde de Bobinas a Enfestar: 0"
+                    txtQtdBobinas.text = String.format(Locale.getDefault(), "3. Bobinas a Enfestar: %.2f", pedido / pecasPorBobina)
                 }
             }
+        }
+
+        btnReset.setOnClickListener {
+            editCircDesejada.setText("")
+            editVoltas.setText("")
+            editGrade.setText("")
+            editPedido.setText("")
+            txtCircReal.text = ""
+            txtPecasBobina.text = ""
+            txtMetrosBobina.text = ""
+            txtQtdBobinas.text = ""
+            rodaView.visibility = View.GONE
+            // Limpa o desenho interno da roda também
+            rodaView.setPinos(intArrayOf(0, 0, 0, 0, 0, 0))
         }
     }
 }

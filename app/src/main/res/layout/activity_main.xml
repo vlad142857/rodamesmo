@@ -7,167 +7,51 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center_horizontal">
+        android:orientation="vertical">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Calculadora de Eixos"
+            android:text="RodaMesmo - Produção"
             android:textSize="22sp"
             android:textStyle="bold"
+            android:layout_gravity="center_horizontal"
             android:layout_marginBottom="16dp" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Tamanho do Eixo no Pino 0 (m):"
-            android:layout_marginBottom="4dp" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Circunferência Desejada (m):" android:layout_marginTop="8dp"/>
+        <EditText android:id="@+id/editCircunferenciaDesejada" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="numberDecimal" />
 
-        <EditText
-            android:id="@+id/editTamanhoBase"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Ex: 1.0"
-            android:inputType="numberDecimal"
-            android:text="1.0"
-            android:layout_marginBottom="16dp" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Grade:" android:layout_marginTop="8dp"/>
+        <EditText android:id="@+id/editGrade" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="numberDecimal" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Circunferência desejada (m):"
-            android:layout_marginBottom="4dp" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Número de Voltas:" android:layout_marginTop="8dp"/>
+        <EditText android:id="@+id/editVoltas" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="numberDecimal" />
 
-        <EditText
-            android:id="@+id/editCircunferenciaDesejada"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Ex: 9.0"
-            android:inputType="numberDecimal"
-            android:text="9.0"
-            android:layout_marginBottom="16dp" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Quantidade do Pedido:" android:layout_marginTop="8dp"/>
+        <EditText android:id="@+id/editPedido" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="numberDecimal" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Número de Voltas:"
-            android:layout_marginBottom="4dp" />
+        <Button android:id="@+id/btnDistribuir" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Calcular Produção" android:layout_marginTop="16dp"/>
+        <Button android:id="@+id/btnReset" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Resetar" style="@style/Widget.AppCompat.Button.Colored" android:backgroundTint="#6c757d" />
 
-        <EditText
-            android:id="@+id/editVoltas"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Ex: 100"
-            android:inputType="numberDecimal"
-            android:text="100"
-            android:layout_marginBottom="16dp" />
+        <!-- GRÁFICO DA RODA -->
+        <com.example.rodamesmo.RodaView
+            android:id="@+id/rodaView"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:visibility="gone" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Grade:"
-            android:layout_marginBottom="4dp" />
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#ccc" android:layout_marginVertical="16dp" />
 
-        <EditText
-            android:id="@+id/editGrade"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Ex: 6"
-            android:inputType="numberDecimal"
-            android:text="6"
-            android:layout_marginBottom="16dp" />
+        <TextView android:id="@+id/txtCircReal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#1a73e8" android:textStyle="bold" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Quantidade do Pedido:"
-            android:layout_marginBottom="4dp" />
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#ccc" android:layout_marginBottom="16dp" />
 
-        <EditText
-            android:id="@+id/editPedido"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Ex: 5000"
-            android:inputType="numberDecimal"
-            android:text="1000"
-            android:layout_marginBottom="16dp" />
+        <!-- OS 3 CÁLCULOS DE PRODUÇÃO -->
+        <TextView android:id="@+id/txtPecasBobina" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="18sp" android:textStyle="bold" android:textColor="#28a745" />
+        <TextView android:id="@+id/txtMetrosBobina" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="18sp" android:textStyle="bold" android:textColor="#1a73e8" />
+        <TextView android:id="@+id/txtQtdBobinas" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="18sp" android:textStyle="bold" android:textColor="#ff8c00" />
 
-        <Button
-            android:id="@+id/btnDistribuir"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Calcular Distribuição dos Eixos"
-            android:layout_marginBottom="24dp" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@android:color/darker_gray"
-            android:layout_marginBottom="24dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Sugestão de Eixos (Arredondado 5cm):"
-            android:textStyle="bold"
-            android:layout_marginBottom="16dp" />
-
-        <!-- Eixos sugeridos -->
-        <TextView android:id="@+id/txtSugestaoEixos"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Eixos: 1.50m cada"
-            android:textSize="18sp"
-            android:gravity="center"
-            android:layout_marginBottom="16dp" />
-
-        <TextView
-            android:id="@+id/txtCircunferenciaReal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Circunferência Real: 9.00 m"
-            android:textSize="16sp"
-            android:textColor="@android:color/black"
-            android:layout_marginBottom="8dp" />
-
-        <TextView
-            android:id="@+id/txtDistanciaTotal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Distância Total: 0.00 m"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="#1a73e8"
-            android:layout_marginBottom="8dp" />
-
-        <TextView
-            android:id="@+id/txtAreaTotal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Área Total: 0.00 ha"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:textColor="#28a745" />
-
-        <TextView
-            android:id="@+id/txtPecasBobina"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Qtde de Peças por Bobina: 0"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="#28a745"
-            android:layout_marginTop="16dp" />
-
-        <TextView
-            android:id="@+id/txtQtdBobinas"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Qtde de Bobinas a Enfestar: 0"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="#ff8c00"
-            android:layout_marginTop="8dp" />
     </LinearLayout>
 </ScrollView>
