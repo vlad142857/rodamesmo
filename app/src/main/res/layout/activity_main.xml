@@ -30,7 +30,11 @@
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Quantidade do Pedido:" android:layout_marginTop="8dp"/>
         <EditText android:id="@+id/editPedido" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="numberDecimal" />
 
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Número de Enfestos:" android:layout_marginTop="8dp"/>
+        <EditText android:id="@+id/editEnfestos" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="number" android:text="1" />
+
         <Button android:id="@+id/btnDistribuir" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Calcular Produção" android:layout_marginTop="16dp"/>
+        <Button android:id="@+id/btnWhatsApp" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Enviar via WhatsApp" android:backgroundTint="#25d366" android:visibility="gone" />
         <Button android:id="@+id/btnSalvarHistorico" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Salvar no Histórico" android:visibility="gone" android:backgroundTint="#28a745" />
         <Button android:id="@+id/btnReset" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Limpar Tudo" style="@style/Widget.AppCompat.Button.Colored" android:backgroundTint="#6c757d" />
 

@@ -24,8 +24,10 @@ class MainActivity : AppCompatActivity() {
         val editGrade = findViewById<EditText>(R.id.editGrade)
         val editVoltas = findViewById<EditText>(R.id.editVoltas)
         val editPedido = findViewById<EditText>(R.id.editPedido)
+        val editEnfestos = findViewById<EditText>(R.id.editEnfestos)
         
         val btnDistribuir = findViewById<Button>(R.id.btnDistribuir)
+        val btnWhatsApp = findViewById<Button>(R.id.btnWhatsApp)
         val btnReset = findViewById<Button>(R.id.btnReset)
         val btnSalvarHist = findViewById<Button>(R.id.btnSalvarHistorico)
         val btnLimparHist = findViewById<Button>(R.id.btnLimparHistorico)
@@ -80,17 +82,65 @@ class MainActivity : AppCompatActivity() {
                 val row = listaInputsFolhas.getChildAt(i) as? LinearLayout
                 val txtSomaGrup = row?.getChildAt(2) as? TextView // Agora o Σ é o terceiro elemento (índice 2)
                 
-                grupoSoma += listaFolhas[i]
-                contador++
-                
-                if (agruparCada > 1 && (contador == agruparCada || i == listaFolhas.size - 1)) {
-                    txtSomaGrup?.text = "Σ: $grupoSoma"
-                    txtSomaGrup?.visibility = View.VISIBLE
-                    grupoSoma = 0
-                    contador = 0
+                if (agruparCada > 1) {
+                    val row = listaInputsFolhas.getChildAt(i) as? LinearLayout
+                    val isLastOfEnfesto = row?.tag == "last_of_enfesto"
+                    val txtSomaGrup = row?.getChildAt(2) as? TextView
+                    
+                    grupoSoma += listaFolhas[i]
+                    contador++
+                    
+                    if (contador == agruparCada || isLastOfEnfesto || i == listaFolhas.size - 1) {
+                        txtSomaGrup?.text = "Σ: $grupoSoma"
+                        txtSomaGrup?.visibility = View.VISIBLE
+                        grupoSoma = 0
+                        contador = 0
+                    } else {
+                        txtSomaGrup?.visibility = View.GONE
+                    }
                 } else {
+                    val row = listaInputsFolhas.getChildAt(i) as? LinearLayout
+                    val txtSomaGrup = row?.getChildAt(2) as? TextView
                     txtSomaGrup?.visibility = View.GONE
                 }
+            }
+        }
+
+        fun compartilharWhatsApp() {
+            val circ = txtCircReal.text.toString()
+            val pecasBob = txtPecasBobina.text.toString()
+            val metrosBob = txtMetrosBobina.text.toString()
+            val bobinas = txtQtdBobinas.text.toString()
+            val totalFolhas = txtTotalFolhasReais.text.toString()
+            val totalPecas = txtTotalPecasReais.text.toString()
+
+            var listaDetalhada = "\n*DETALHAMENTO POR ENFESTO:*"
+            for (i in 0 until listaInputsFolhas.childCount) {
+                val child = listaInputsFolhas.getChildAt(i)
+                if (child is TextView && child.tag == "header") {
+                    listaDetalhada += "\n\n🟢 *${child.text}*"
+                } else if (child is LinearLayout) {
+                    val txtEnum = (child.getChildAt(0) as? TextView)?.text ?: ""
+                    val editFolha = (child.getChildAt(1) as? EditText)?.text ?: "0"
+                    val txtSoma = (child.getChildAt(2) as? TextView)
+                    val somaText = if (txtSoma?.visibility == View.VISIBLE) " -> ${txtSoma.text}" else ""
+                    listaDetalhada += "\n$txtEnum $editFolha fls$somaText"
+                }
+            }
+
+            val texto = "*RODAMÉSMO - RELATÓRIO DE PRODUÇÃO*\n\n" +
+                    "$circ\n$pecasBob\n$metrosBob\n$bobinas\n\n" +
+                    "*LANÇAMENTO REAL:*\n$totalFolhas\n$totalPecas\n" +
+                    listaDetalhada
+
+            val intent = android.content.Intent(android.content.Intent.ACTION_SEND)
+            intent.type = "text/plain"
+            intent.setPackage("com.whatsapp")
+            intent.putExtra(android.content.Intent.EXTRA_TEXT, texto)
+            try {
+                startActivity(intent)
+            } catch (e: Exception) {
+                android.widget.Toast.makeText(this, "WhatsApp não instalado", android.widget.Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -129,55 +179,78 @@ class MainActivity : AppCompatActivity() {
                 val pecasPorBobina = grade * voltas
                 val metrosPorBobina = targetArredondado * voltas
                 val bobinasAEnfestar = if (pecasPorBobina > 0) pedido / pecasPorBobina else 0.0
+                val numEnfestos = editEnfestos.text.toString().toIntOrNull() ?: 1
 
                 txtPecasBobina.text = String.format(Locale.getDefault(), "1. Peças por Bobina: %.0f", pecasPorBobina)
                 txtMetrosBobina.text = String.format(Locale.getDefault(), "2. Metros por Bobina: %.2f m", metrosPorBobina)
                 txtQtdBobinas.text = String.format(Locale.getDefault(), "3. Bobinas a Enfestar: %.2f", bobinasAEnfestar)
 
+                btnWhatsApp.visibility = View.VISIBLE
+                btnWhatsApp.setOnClickListener { compartilharWhatsApp() }
+
                 // CRIAR FORMULÁRIO DE FOLHAS REAIS
-                val numBobinasInt = Math.ceil(bobinasAEnfestar).toInt()
+                val totalBobinas = Math.ceil(bobinasAEnfestar).toInt()
                 listaInputsFolhas.removeAllViews()
-                if (numBobinasInt > 0) {
+                if (totalBobinas > 0) {
                     containerFolhasReais.visibility = View.VISIBLE
-                    for (i in 1..numBobinasInt) {
-                        val row = LinearLayout(this).apply {
-                            orientation = LinearLayout.HORIZONTAL
-                            gravity = android.view.Gravity.CENTER_VERTICAL
-                            setPadding(0, 4, 0, 4)
-                        }
+                    var bobinaGlobal = 1
+                    val bobinasPorEnfestoBase = totalBobinas.toDouble() / numEnfestos
 
-                        // ENUMERAÇÃO (1., 2., 3...)
-                        val txtEnum = TextView(this).apply {
-                            text = "$i."
+                    for (e in 1..numEnfestos) {
+                        // Header do Enfesto
+                        val header = TextView(this).apply {
+                            text = "ENFESTO $e"
                             textSize = 18f
-                            setPadding(8, 0, 16, 0)
-                            setTextColor(android.graphics.Color.DKGRAY)
-                        }
-
-                        val editFolha = EditText(this).apply {
-                            hint = "Bobina $i"
-                            inputType = android.text.InputType.TYPE_CLASS_NUMBER
-                            setText("0")
-                            textSize = 20f
-                            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-                            addTextChangedListener(object : TextWatcher {
-                                override fun afterTextChanged(s: Editable?) { atualizarSomaReal() }
-                                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-                                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-                            })
-                        }
-
-                        val txtSomaGrup = TextView(this).apply {
-                            setPadding(24, 0, 16, 0)
-                            setTextColor(android.graphics.Color.BLUE)
+                            setPadding(0, 32, 0, 8)
+                            setTextColor(android.graphics.Color.parseColor("#1a73e8"))
                             setTypeface(null, android.graphics.Typeface.BOLD)
-                            textSize = 24f // Fonte maior conforme solicitado
+                            tag = "header"
                         }
+                        listaInputsFolhas.addView(header)
 
-                        row.addView(txtEnum)
-                        row.addView(editFolha)
-                        row.addView(txtSomaGrup)
-                        listaInputsFolhas.addView(row)
+                        val qtdNesteEnfesto = (Math.round(e * bobinasPorEnfestoBase) - Math.round((e - 1) * bobinasPorEnfestoBase)).toInt()
+
+                        for (i in 1..qtdNesteEnfesto) {
+                            val row = LinearLayout(this).apply {
+                                orientation = LinearLayout.HORIZONTAL
+                                gravity = android.view.Gravity.CENTER_VERTICAL
+                                setPadding(0, 4, 0, 4)
+                                if (i == qtdNesteEnfesto) tag = "last_of_enfesto"
+                            }
+
+                            val txtEnum = TextView(this).apply {
+                                text = "$bobinaGlobal."
+                                textSize = 18f
+                                setPadding(8, 0, 16, 0)
+                                setTextColor(android.graphics.Color.DKGRAY)
+                            }
+
+                            val editFolha = EditText(this).apply {
+                                hint = "Bobina $bobinaGlobal"
+                                inputType = android.text.InputType.TYPE_CLASS_NUMBER
+                                setText("0")
+                                textSize = 20f
+                                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                                addTextChangedListener(object : TextWatcher {
+                                    override fun afterTextChanged(s: Editable?) { atualizarSomaReal() }
+                                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                                })
+                            }
+
+                            val txtSomaGrup = TextView(this).apply {
+                                setPadding(24, 0, 16, 0)
+                                setTextColor(android.graphics.Color.BLUE)
+                                setTypeface(null, android.graphics.Typeface.BOLD)
+                                textSize = 24f
+                            }
+
+                            row.addView(txtEnum)
+                            row.addView(editFolha)
+                            row.addView(txtSomaGrup)
+                            listaInputsFolhas.addView(row)
+                            bobinaGlobal++
+                        }
                     }
                     atualizarSomaReal()
                 } else {
@@ -199,9 +272,11 @@ class MainActivity : AppCompatActivity() {
 
         btnReset.setOnClickListener {
             editCircDesejada.setText(""); editVoltas.setText(""); editGrade.setText(""); editPedido.setText("")
+            editEnfestos.setText("1")
             txtCircReal.text = ""; txtPecasBobina.text = ""; txtMetrosBobina.text = ""; txtQtdBobinas.text = ""
             rodaView.visibility = View.GONE
             btnSalvarHist.visibility = View.GONE
+            btnWhatsApp.visibility = View.GONE
             containerFolhasReais.visibility = View.GONE
             listaInputsFolhas.removeAllViews()
         }
